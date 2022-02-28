@@ -21,5 +21,17 @@ module.exports = {
             .catch(e => res.status(400).send({
                 error: e.message
             }))
+    },
+    updateAction: async (req, res) => {
+        await Company.update(req.params._id, req.body)
+            .then(resp => res.status(201).send(resp))
+            .catch(e => res.status(400).send({error: e.message}))
+    },
+    paginate: async (req, res) => {
+        await Company.paginate(req)
+        .then(resp => res.status(200).send(resp))
+        .catch(e => res.status(400).send({
+            error: e.message
+        }))
     }
 }

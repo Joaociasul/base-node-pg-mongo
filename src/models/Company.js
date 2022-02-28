@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+const { pages, options, paginateOptions } = require('../services/paginate')
+const mongoosePaginate = require('mongoose-paginate-v2');
+const { PaginationParameters } = require('mongoose-paginate-v2');
 
 const CompanySchema = new mongoose.Schema({
     corporateName: {
@@ -34,58 +37,79 @@ const CompanySchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        bla:{
-            default:"bla",
-            type:String
-        }
     },
     settings: {
         type: Object
     },
     descricao: String
 })
+
+CompanySchema.plugin(mongoosePaginate)
 const CompanyModel = mongoose.model('Company', CompanySchema)
 
 class Company {
     static createCompany = (data) => {
         return new Promise((resolve, reject) => {
             try {
-                const create = CompanyModel.create(data)
-                resolve(create)
+                const create = CompanyModel.create(data);
+                resolve(create);
             } catch (error) {
-                throw reject(error)
+                throw reject(error);
             }
         })
     }
     static getData = (filters) => {
         return new Promise((resolve, reject) => {
             try {
-                let data = CompanyModel.find(filters)
-                resolve(data)
+                const data = CompanyModel.find(filters);
+                resolve(data);
             } catch (error) {
-                reject(error)
+                reject(error);
             }
         })
     }
-    static filterData(filter){
-        return new Promise( (resolve, reject) => {
+    static filterData(filter) {
+        return new Promise((resolve, reject) => {
             try {
-                let data = CompanyModel.find(filter);
-                resolve(data)
+                const data = CompanyModel.find(filter);
+                resolve(data);
             } catch (error) {
-                reject(error)
+                reject(error);
             }
         })
     }
-    static getById(_id){
+    static getById(_id) {
+        return new Promise((resolve, reject) => {
+            try {
+                const data = CompanyModel.findById(_id);
+                resolve(data);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+    static update(_id, data) {
+        return new Promise((resolve, reject) => {
+            try {
+                const update = CompanyModel.findByIdAndUpdate(_id, data, {
+                    new: true
+                }).exec();
+                resolve(update);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+    static paginate(req) {       
         return new Promise( (resolve, reject) => {
             try {
-                let data = CompanyModel.findById(_id);
+                const {filter, options} = paginateOptions(req)
+                const data = CompanyModel.paginate(filter, options)
                 resolve(data)
             } catch (error) {
                 reject(error)
             }
-        })
+        })   
     }
 }
 module.exports = Company
