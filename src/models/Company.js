@@ -49,14 +49,15 @@ const CompanyModel = mongoose.model('Company', CompanySchema)
 
 class Company {
     static createCompany = (data) => {
-        return new Promise((resolve, reject) => {
-            try {
-                const create = CompanyModel.create(data);
-                resolve(create);
-            } catch (error) {
-                throw reject(error);
-            }
-        })
+        return CompanyModel.create(data);
+        // return new Promise((resolve, reject) => {
+        //     try {
+        //         const create = 
+        //         resolve(create);
+        //     } catch (error) {
+        //         reject(error);
+        //     }
+        // })
     }
     static getData = (filters) => {
         return new Promise((resolve, reject) => {
