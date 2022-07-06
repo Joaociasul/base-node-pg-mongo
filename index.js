@@ -1,32 +1,22 @@
-const express = require('express')
-
-require('express-async-errors')
-const { NotFoundException } = require('./src/modules/server-exceptions')
-const { StatusCodes } = require('./src/modules/server-exceptions')
-const { exceptionsHandler } = require('./src/modules/server-exceptions')
-const router = require('./src/routes/router')
-require('dotenv').config()
-const cors = require('cors')
-
-const app = express()
-app.use(cors({origin:'*',methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']}))
-app.use(express.json())
-app.use(router)
-app.use(exceptionsHandler)
-app.use((req, res, next) => {
-    res.status(StatusCodes.NOT_FOUND).json(new NotFoundException('Not Found'))
-})
-const mongoose = require('mongoose')
+(function () {
+    const express = require('express');
+    require('express-async-errors')
+    const { NotFoundException } = require('./src/modules/server-exceptions')
+    const { StatusCodes } = require('./src/modules/server-exceptions')
+    const { exceptionsHandler } = require('./src/modules/server-exceptions')
+    const app = express();
+    require('dotenv').config()
+    const http = require('http');
+    const bodyParser = require('body-parser')
+    app.use(bodyParser.json())
+    app.use(bodyParser.urlencoded({ extended: false }))
+    const mongoose = require('mongoose')
     mongoose.connect(process.env.MONGO_STRING)
     .then(() => {
         app.emit('bdOk')
     })
     .catch(e => console.log(e))
-app.on('bdOk', () => {
-    const port = process.env.APP_PORT | 3000
-    const server = app.listen(port, () => {
-        console.log("Integração view node listen on port: " + port)
-    })
+    const server = http.createServer(app);
     const io = require("socket.io")(server, {
         cors: {
             origin: "*",
@@ -34,6 +24,25 @@ app.on('bdOk', () => {
         }
     });
     module.exports = io
+    const cors = require('cors')
+    const router = require('./src/routes/router');
+    app.use(router)
+    app.use(exceptionsHandler)
+    app.use((req, res, next) => {
+        res.status(StatusCodes.NOT_FOUND).json(new NotFoundException('Not Found'))
+    })
     const { authSocket } = require('./src/middlwares/auth');
     io.use(authSocket)
-})
+    app.use(cors({origin:'*',methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']}))
+    app.get('/', (req, res) => {
+        res.send({ping:true})
+    });
+    app.on('bdOk', () => {
+        const port = process.env.APP_PORT || 3000
+        server.listen(port, () => {
+            console.log('Server on port:' + port);
+        });
+    })
+    
+})()
+
